@@ -9,7 +9,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Add JSON parsing for stored chapter data
+app.use(express.json());
 app.use(express.static("public"));
 
 nunjucks.configure("views", {
@@ -21,8 +21,12 @@ app.get("/", (req, res) => {
   res.render("index.njk");
 });
 
+app.get("/api-key", (req, res) => {
+  res.render("api-key.njk");
+});
+
 app.post("/translate", async (req, res) => {
-  const { url, storedChapter } = req.body;
+  const { url, storedChapter, apiKey } = req.body;
 
   if (storedChapter) {
     try {
@@ -38,14 +42,13 @@ app.post("/translate", async (req, res) => {
     return res.render("index.njk", { error: "Please enter a URL." });
   }
 
+  if (!apiKey) {
+    return res.render("index.njk", { error: "Please set an API key first." });
+  }
+
   try {
     const response = await axios.get(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
         Referer: "https://google.com",
       },
       timeout: 10000,
@@ -60,12 +63,12 @@ app.post("/translate", async (req, res) => {
       `Translate the following content to English. 
       Do not explain anything or add extra text. 
       There must be no content other than chapter content.
-      Only return the translated chapter starting
-      from chapter number and name.
+      Only return the translated chapter starting from chapter number and name.
       Find the main chapter content of the novel and only return that.
-      No extra thats not part od the novel chapter.
-      ALways translete to "english" no matter what the source lang is.
-      :\n\n${rawText}`
+      No extra text that are not part of the novel chapter.
+      Always translate to "english" no matter what the source lang is.
+      :\n\n${rawText}`,
+      apiKey
     );
 
     res.render("result.njk", { url, translated });
@@ -82,15 +85,14 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 
-const API_KEY = "AIzaSyDtNc5d4nPnyeK8Iu8g64sYwbh8u4evc08";
 const API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-const fetchRawAIResponse = async (prompt) => {
-  if (!prompt.trim()) return;
+const fetchRawAIResponse = async (prompt, apiKey) => {
+  if (!prompt.trim() || !apiKey) return;
 
   try {
-    const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const res = await fetch(`${API_URL}?key=${apiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -114,6 +116,6 @@ const fetchRawAIResponse = async (prompt) => {
     );
   } catch (err) {
     console.error("AI API Error:", err.message);
-    return "An error occurred!";
+    return "An error occurred, API key is not valid!";
   }
 };
