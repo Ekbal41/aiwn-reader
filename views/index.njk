@@ -135,7 +135,8 @@
         const chapterList = document.getElementById("chapterList")
         chapterList.innerHTML = ""
         const scbadge = document.getElementById("scbadge")
-        scbadge.innerHTML = localStorage.length - 1
+        scbadge.innerHTML =
+          localStorage.length > 1 ? localStorage.length - 1 : 0
 
         for (let i = 0; i < localStorage.length; i++) {
           const url = localStorage.key(i)
