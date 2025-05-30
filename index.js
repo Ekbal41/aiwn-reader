@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/translate", async (req, res) => {
- const { url, storedChapter } = req.body;
+  const { url, storedChapter } = req.body;
 
   if (storedChapter) {
     try {
@@ -64,6 +64,7 @@ app.post("/translate", async (req, res) => {
       from chapter number and name.
       Find the main chapter content of the novel and only return that.
       No extra thats not part od the novel chapter.
+      ALways translete to "english" no matter what the source lang is.
       :\n\n${rawText}`
     );
 
