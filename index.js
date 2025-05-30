@@ -60,8 +60,11 @@ app.post("/translate", async (req, res) => {
       `Translate the following content to English. 
       Do not explain anything or add extra text. 
       There must be no content other than chapter content.
-      Only return the translated chapter starting 
-      from chapter number and name:\n\n${rawText}`
+      Only return the translated chapter starting
+      from chapter number and name.
+      Find the main chapter content of the novel and only return that.
+      No extra thats not part od the novel chapter.
+      :\n\n${rawText}`
     );
 
     res.render("result.njk", { url, translated });
