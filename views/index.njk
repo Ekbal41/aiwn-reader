@@ -162,16 +162,19 @@
         clearAllCapButton.style.display = "none"
         chapterList.innerHTML = `
         <div class="d-flex justify-content-center align-items-center" style="height: calc(100vh - 100px);">
-      <div class="text-center text-muted d-flex justify-content-center align-items-center flex-column">
-      <i class="bi bi-journal-x" style="font-size: 3rem;"></i>
-      <h4 class="mt-3">No Saved Chapters</h4>
-      <p class="mb-0 w-75">You haven't saved any chapters yet. Start by adding one!</p>
-       </div></div>`
+        <div class="text-center text-muted d-flex justify-content-center align-items-center flex-column">
+        <i class="bi bi-journal-x" style="font-size: 3rem;"></i>
+        <h4 class="mt-3">No Saved Chapters</h4>
+        <p class="mb-0 w-75">You haven't saved any chapters yet. Start by adding one!</p>
+        </div></div>`
 
         const scbadge = document.getElementById("scbadge")
-        scbadge.innerHTML =
-          localStorage.length > 1 ? localStorage.length - 1 : 0
-        if (localStorage.length > 1) {
+        const savedChapters = Object.keys(localStorage).filter(
+          (key) => !key.startsWith("key") && !key.startsWith("theme")
+        )
+        scbadge.innerHTML = savedChapters.length
+
+        if (savedChapters.length > 0) {
           clearAllCapButton.style.display = "block"
           chapterList.innerHTML = ""
         }
@@ -207,7 +210,7 @@
                 const apiKeyInput = document.createElement("input")
                 apiKeyInput.type = "hidden"
                 apiKeyInput.name = "apiKey"
-                apiKeyInput.value = localStorage.getItem("geminiApiKey") || ""
+                apiKeyInput.value = localStorage.getItem("key") || ""
                 form.appendChild(apiKeyInput)
                 document.body.appendChild(form)
                 form.submit()
@@ -226,7 +229,11 @@
       }
 
       function clearChapters() {
-        localStorage.clear()
+        Object.keys(localStorage).forEach((key) => {
+          if (!key.startsWith("key") && !key.startsWith("theme")) {
+            localStorage.removeItem(key)
+          }
+        })
         loadChapters()
       }
 
@@ -234,7 +241,7 @@
         .getElementById("translateForm")
         .addEventListener("submit", (e) => {
           const url = document.getElementById("url").value
-          const apiKey = localStorage.getItem("geminiApiKey") || ""
+          const apiKey = localStorage.getItem("key") || ""
           document.getElementById("apiKey").value = apiKey
           const storedChapter = localStorage.getItem(url)
           if (storedChapter) {
